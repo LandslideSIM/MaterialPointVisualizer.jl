@@ -20,11 +20,14 @@ Generates a `.vtp` file by passing custom fields.
 """
 function fastvtp(coords; vtp_file="output.vtp", data::T=NamedTuple()) where T <: NamedTuple
     pts_num = size(coords, 1)
+    size(coords, 2) ≤ 3 || throw(ArgumentError("The input coordinates should be 2D or 3D"))
+
     vtp_cls = [MeshCell(PolyData.Verts(), [i]) for i in 1:pts_num]
     vtk_grid(vtp_file, coords', vtp_cls, ascii=false) do vtk
         keys(data) ≠ () && for vtp_key in keys(data)
             vtk[string(vtp_key)] = getfield(data, vtp_key)
         end
     end
+    
     return nothing
 end
