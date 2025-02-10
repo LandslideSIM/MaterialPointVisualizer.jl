@@ -25,7 +25,7 @@ function __init__()
     try
         run(pipeline(`splashsurf -V`, stdout=devnull, stderr=devnull))
     catch e
-        if isa(e, IOError)  # splashsurf 未安装
+        if isa(e, Base.IOError)  # splashsurf 未安装
             @warn """splashsurf
             Cannot find splashsurf on this system. If you need surface reconstruction, please 
             install it first, see: https://github.com/InteractiveComputerGraphics/splashsurf 
