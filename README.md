@@ -24,17 +24,9 @@ julia> ]
 
 ## Showcases 🎲
 
-| 3D phoenix and dragon |  DEM with thickness | complex 2D |
-|:--------:|:--------:|:--------:|
-| <img src="docs/src/assets/showcase/phoenix_dragon.png" width="200"> | <img src="docs/src/assets/showcase/dem.png" width="200"> | <img src="docs/src/assets/showcase/octopus.png" width="200"> |
-
-| 2D landslide profile with geological structure (`nid`) |
-|:--------:|
-| <img src="docs/src/assets/showcase/landslide.png" width="660"> |
-
-| 3D DEM with material ID | Profile|
-|:--------:|:---:|
-| <img src="docs/src/example/image9.png" width="300"> | <img src="docs/src/example/image10.png" width="360"> |
+| ParaView |  Surface reconstruction |
+|:--------:|:--------:|
+| <img src="docs/src/assets/particle2vtp.png" width="300"> | <img src="docs/src/assets/1.gif" width="260"> |
 
 ## Acknowledgement 👍
 
