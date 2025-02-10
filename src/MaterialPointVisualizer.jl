@@ -22,12 +22,16 @@ include("particle2vtp.jl")
 include("particle2surf.jl")
 
 function __init__()
-    if !success(pipeline(`splashsurf -V`, stdout=devnull, stderr=devnull))
-        @warn """splashsurf
-        Cannot find splashsurf on this system. If you need surface reconstruction, please 
-        install it first, see: https://github.com/InteractiveComputerGraphics/splashsurf 
-        and make sure Julia can find it.
-        """
+    try
+        run(pipeline(`splashsurf -V`, stdout=devnull, stderr=devnull))
+    catch e
+        if isa(e, IOError)  # splashsurf 未安装
+            @warn """splashsurf
+            Cannot find splashsurf on this system. If you need surface reconstruction, please 
+            install it first, see: https://github.com/InteractiveComputerGraphics/splashsurf 
+            and make sure Julia can find it.
+            """
+        end
     end
 end
 
