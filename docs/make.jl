@@ -1,7 +1,7 @@
-using Documenter, DocumenterTools, MaterialPointVisualizer
+using Documenter, DocumenterTools, MaterialPointVisualizer, MaterialPointSolver
 
 makedocs(
-    modules = [MaterialPointVisualizer],
+    modules = [MaterialPointVisualizer, MaterialPointSolver],
     format = Documenter.HTML(
         assets = ["assets/favicon.ico"],
         prettyurls = get(ENV, "CI", nothing) == "true"
@@ -11,19 +11,12 @@ makedocs(
     authors = "Zenan Huo",
     pages = [
         "Home" => "index.md",
-        # "Workflow" => Any[
-        #     "workflow/simple_mesh.md",
-        #     "workflow/polygon.md",
-        #     "workflow/polyhedron.md",
-        #     "workflow/DEM.md"
-        # ],
-        # "Example" => Any[
-        #     "example/polygon.md",
-        #     "example/polyhedron.md",
-        #     "example/DEM.md"
-        # ],
+        "Usage" => Any[
+            "usage/particle2vtp.md",
+            "usage/mpm2vtp.md",
+            "usage/surfreconstruction.md",
+        ],
         # "utils.md"
-
     ],
     warnonly = [:missing_docs, :cross_references],
 )
@@ -32,5 +25,5 @@ deploydocs(
     repo = "github.com/LandslideSIM/MaterialPointVisualizer.jl.git",
     target = "build",
     branch = "gh-pages",
-    versions=["stable" => "v^", "dev" => "dev"]
+    versions=["stable" => "v^", "dev" => "dev"] 
 )
