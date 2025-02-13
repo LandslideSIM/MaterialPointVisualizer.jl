@@ -1,4 +1,4 @@
 using MaterialPointVisualizer
 using Test
 
-@test 1==1
+@test !isnothing(MaterialPointVisualizer.trimesh[])
