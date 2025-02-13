@@ -12,7 +12,7 @@ julia> ]
 ## Features
 
 - HDF5 to `.vtp` files
-- surface reconstruction (based on [splashsurf](https://github.com/LandslideSIM/MaterialPointSolver.jl))
+- surface reconstruction (based on [splashsurf](https://github.com/InteractiveComputerGraphics/splashsurf))
 - fast `vtp` for general particle-based results
 - surface detection
 
