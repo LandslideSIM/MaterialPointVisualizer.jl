@@ -6,4 +6,4 @@ MaterialPointSolver = "dc4aa359-7d89-437d-91bb-f4b330c522c1"
 [compat]
 Documenter = "1.7"
 DocumenterTools = "0.1"
-MaterialPointSolver = "0.3"
+MaterialPointSolver = "0.4"
