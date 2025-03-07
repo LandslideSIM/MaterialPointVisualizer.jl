@@ -15,7 +15,7 @@ using ColorSchemes, CondaPkg, DelimitedFiles, Electron, HDF5, NearestNeighbors, 
       ProgressMeter, PythonCall, WriteVTK
 
 import LiveServer: serve
-      
+import StatsBase: sample
 import MaterialPointSolver: DeviceArgs2D, DeviceGrid2D, DeviceParticle2D, DeviceProperty,
                             DeviceArgs3D, DeviceGrid3D, DeviceParticle3D     
 

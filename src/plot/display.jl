@@ -14,7 +14,8 @@ export vispts
     coord   ::Matrix;
     colormap::String    ="viridis", 
     attrs   ::NamedTuple=NamedTuple(), 
-    gui     ::Bool      =false
+    gui     ::Bool      =false,
+    sample_n::Int       =3600000
 )
     # check input file
     if gui
@@ -29,13 +30,18 @@ export vispts
     bin_file = joinpath(tmp_dir, "MaterialPointVisualizerTEMP.bin")
     n, m = size(coord)
     m in [2, 3] || error("The provided coord must have 2/3 columns (2D, 3D)")
+    if n > sample_n
+        vid = sort(sample(1:n, sample_n; replace=false))
+        coord = coord[vid, :]
+        n = sample_n
+    end
     m == 2 ? coord = hcat(coord, zeros(Float32, n)) : nothing
     attrs_num = length(attrs)
     if attrs_num > 0
         attr_name = [String(name) for name in keys(attrs)]
         data      = Array{Float32, 2}(hcat(coord, zeros(Float32, n, attrs_num)))
         for i in 1:attrs_num
-            data[:, 3+i] .= values(attrs[Symbol(attr_name[i])])
+            data[:, 3+i] .= values(attrs[Symbol(attr_name[i])])[vid, :]
         end
     else
         attr_name = ["Z-coord"]
