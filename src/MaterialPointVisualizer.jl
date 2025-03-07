@@ -11,17 +11,21 @@
 
 module MaterialPointVisualizer
 
-using CondaPkg, DelimitedFiles, HDF5, NearestNeighbors, Printf, ProgressMeter, PythonCall, 
-      WriteVTK
+using ColorSchemes, CondaPkg, DelimitedFiles, Electron, HDF5, NearestNeighbors, Printf, 
+      ProgressMeter, PythonCall, WriteVTK
+
+import LiveServer: serve
       
 import MaterialPointSolver: DeviceArgs2D, DeviceGrid2D, DeviceParticle2D, DeviceProperty,
                             DeviceArgs3D, DeviceGrid3D, DeviceParticle3D     
 
 const trimesh = Ref{Py}()
 
-include("mpm2vtp.jl")
-include("particle2vtp.jl")
-include("particle2surf.jl")
+include(joinpath(@__DIR__, "mpm2vtp.jl"       ))
+include(joinpath(@__DIR__, "particle2vtp.jl"  ))
+include(joinpath(@__DIR__, "particle2surf.jl" ))
+include(joinpath(@__DIR__, "plot/exportbin.jl"))
+include(joinpath(@__DIR__, "plot/display.jl"  ))
 
 function __init__()
     @info "checking environment..."
