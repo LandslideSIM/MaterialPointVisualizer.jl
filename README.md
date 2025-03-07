@@ -25,9 +25,15 @@ julia> ]
 
 ## Showcases 🎲
 
-| ParaView |  Surface reconstruction | GUI |
+| ParaView |  Surface reconstruction | GUI (local) |
 |:--------:|:--------:|:--------:|
-| <img src="docs/src/assets/particle2vtp.png" width="300"> | <img src="docs/src/assets/1.gif" width="260"> | <img src="docs/src/assets/gui.png" width="300">
+| <img src="docs/src/assets/particle2vtp.png" width="300"> | <img src="docs/src/assets/1.gif" width="260"> | <img src="docs/src/assets/gui.png" width="300"> |
+
+If you are using SSH to connect to a headless server, we also support viewing particles through a local browser. Please be patient as the data is transmitted locally; this depends on your network speed.
+
+<div align="center">
+    <img src="docs/src/assets/website.gif" width="50%" />
+</div>
 
 ## Acknowledgement 👍
 

@@ -9,4 +9,4 @@ coord = hcat(xy, z)  # n×3 矩阵
 attrs = (attr1=xy[:, 1], attr2=z)
 colormap = "rainbow"
 
-vispts(coord, colormap=colormap, attrs=attrs, gui=false)
+vispts(coord, colormap=colormap, attrs=attrs, gui=true)
