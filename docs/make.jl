@@ -15,6 +15,7 @@ makedocs(
             "usage/particle2vtp.md",
             "usage/mpm2vtp.md",
             "usage/surfreconstruction.md",
+            "usage/display.md"
         ],
         # "utils.md"
     ],

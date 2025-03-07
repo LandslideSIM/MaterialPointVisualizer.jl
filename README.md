@@ -2,13 +2,13 @@
 
 [![CI](https://github.com/LandslideSIM/MaterialPointVisualizer.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/LandslideSIM/MaterialPointVisualizer.jl/actions/workflows/ci.yml) 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg?logo=quicklook)](https://LandslideSIM.github.io/MaterialPointVisualizer.jl/stable)
-[![Version](https://img.shields.io/badge/version-v0.1.2-pink)]()
+[![Version](https://img.shields.io/badge/version-v0.1.3-pink)]()
 
 With this package, we can convert the MPM simulation results (HDF5 files from ***[MaterialPointSolver.jl](https://github.com/LandslideSIM/MaterialPointSolver.jl)*** ) into `.vtp` files or create ParaView-compatible animations. Additionally, it includes some post-processing functionalities.
 
 ## Installation ⚙️
 
-Just type <kbd>]</kbd> in Julia's  `REPL`:
+Just type <kbd>]</kbd> in Julia's `REPL`:
 
 ```julia
 julia> ]
@@ -21,12 +21,19 @@ julia> ]
 - [x] surface reconstruction (based on [splashsurf](https://github.com/LandslideSIM/MaterialPointSolver.jl))
 - [x] fast `vtp` for general particle-based results
 - [x] surface detection
+- [x] high-performance GUI/website (million ⬆️) 
 
 ## Showcases 🎲
 
-| ParaView |  Surface reconstruction |
-|:--------:|:--------:|
-| <img src="docs/src/assets/particle2vtp.png" width="300"> | <img src="docs/src/assets/1.gif" width="260"> |
+| ParaView                                                 | Surface reconstruction                        | GUI (local)                                     |
+|:--------------------------------------------------------:|:---------------------------------------------:|:-----------------------------------------------:|
+| <img src="docs/src/assets/particle2vtp.png" width="300"> | <img src="docs/src/assets/1.gif" width="300"> | <img src="docs/src/assets/gui.png" width="300"> |
+
+If you are using SSH to connect to a headless server, we also support viewing particles through a local browser. Please be patient as the data is transmitted locally; this depends on your network speed.
+
+<div align="center">
+    <img src="docs/src/assets/website.gif" width="50%" />
+</div>
 
 ## Acknowledgement 👍
 
