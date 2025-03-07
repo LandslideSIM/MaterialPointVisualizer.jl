@@ -10,6 +10,24 @@
 
 export vispts
 
+"""
+    vispts(coord::Matrix; colormap="viridis", attrs=NamedTuple(), gui=false, sample_n=3600000)
+
+Description:
+---
+Visualize the particles in a local GUI window or website. 
+
+- `coord` is a matrix of the particle coordniates, it can be 2/3 colomns for 2/3D 
+visualization. 
+- `colormap` is the color theme will be used in the visualization. By default, it is
+set to "viridis". [optional]
+- `attrs` is a NamedTuple of the attributes of the particles, the keys are the attribute 
+names and the values are the attribute values. [optional]
+- `gui` is a boolean value to determine whether to open a local GUI window or a website. By
+default, it is set to false, i.e., website mode. [optional]
+- `sample_n` is the number of particles to be sampled for visualization. By default, it
+is set to 3,600,000. [optional]
+"""
 @views function vispts(
     coord   ::Matrix;
     colormap::String    ="viridis", 
@@ -34,6 +52,8 @@ export vispts
         vid = sort(sample(1:n, sample_n; replace=false))
         coord = coord[vid, :]
         n = sample_n
+    else
+        vid = 1:n
     end
     m == 2 ? coord = hcat(coord, zeros(Float32, n)) : nothing
     attrs_num = length(attrs)
