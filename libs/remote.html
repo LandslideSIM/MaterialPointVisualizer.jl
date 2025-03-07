@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaterialPointVisualizer.jl - LandslideSIM | Risk Group | Université de Lausanne</title>
+    <!-- FPS 统计工具 (保持 0.17.0) -->
+    <script src="./stats.min.js"></script>
+    <!-- GUI 库 (保持 0.19.2) -->
+    <script src="./lil-gui.umd.min.js"></script>
+    <!-- 定义 importmap 来加载 Three.js 和 OrbitControls -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "./three/three.module.js",
+            "three/addons/": "./three/addons/"
+        }
+    }
+    </script>
+</head>
+<body style="margin: 0; overflow: hidden;">
+    <!-- 加载主脚本作为模块 -->
+    <script type="module">
+        import * as THREE from "three";
+        import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+        // 直接使用固定的binPath
+        const binPath = './MaterialPointVisualizerTEMP.bin';
+
+        // 全局函数，用于根据文件路径获取并处理二进制数据
+        function fetchBinaryData(binPath) {
+            fetch(binPath)
+                .then(response => response.arrayBuffer())
+                .then(buffer => {
+                    const dataView = new DataView(buffer);
+
+                    // 读取顶点数和属性数
+                    const n = dataView.getInt32(0, true); // 小端字节序
+                    const k = dataView.getInt32(4, true);
+
+                    // 读取属性名称
+                    let offset = 8;
+                    const attributeNames = [];
+                    for (let i = 0; i < k; i++) {
+                        const len = dataView.getInt32(offset, true);
+                        offset += 4;
+                        const nameBytes = new Uint8Array(buffer, offset, len);
+                        const name = new TextDecoder().decode(nameBytes);
+                        attributeNames.push(name);
+                        offset += len;
+                        const padding = (4 - (len % 4)) % 4; // 跳过填充字节
+                        offset += padding;
+                    }
+
+                    // 读取顶点数据
+                    const floatsPerVertex = 3 + k; // 3 个坐标 + k 个属性
+                    const totalVertexFloats = n * floatsPerVertex;
+                    const vertexData = new Float32Array(buffer, offset, totalVertexFloats);
+                    offset += totalVertexFloats * 4;
+
+                    // 读取颜色数据
+                    const colorsList = [];
+                    for (let j = 0; j < k; j++) {
+                        const colors = new Float32Array(buffer, offset, n * 3);
+                        colorsList.push(colors);
+                        offset += n * 3 * 4;
+                    }
+
+                    // 读取最小值和最大值
+                    const minMaxList = [];
+                    for (let j = 0; j < k; j++) {
+                        const minVal = dataView.getFloat32(offset, true);
+                        offset += 4;
+                        const maxVal = dataView.getFloat32(offset, true);
+                        offset += 4;
+                        minMaxList.push({ min: minVal, max: maxVal });
+                    }
+
+                    // 读取颜色条数据
+                    const numSamples = dataView.getInt32(offset, true);
+                    offset += 4;
+                    const colorbarColors = new Float32Array(buffer, offset, numSamples * 3);
+
+                    // 创建几何体
+                    const geometry = new THREE.BufferGeometry();
+                    const positions = new Float32Array(n * 3);
+                    for (let i = 0; i < n; i++) {
+                        positions[i * 3] = vertexData[i * floatsPerVertex];     // x
+                        positions[i * 3 + 1] = vertexData[i * floatsPerVertex + 1]; // y
+                        positions[i * 3 + 2] = vertexData[i * floatsPerVertex + 2]; // z
+                    }
+                    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+                    // 创建材质和点云
+                    const material = new THREE.PointsMaterial({
+                        size: 0.1,
+                        vertexColors: true
+                    });
+                    const points = new THREE.Points(geometry, material);
+
+                    // 渲染点云
+                    renderPoints(points, geometry, attributeNames, colorsList, minMaxList, n, k, colorbarColors, numSamples);
+                })
+                .catch(error => console.error('Error loading binary file:', error));
+        }
+
+        function renderPoints(points, geometry, attributeNames, colorsList, minMaxList, n, k, colorbarColors, numSamples) {
+            // 初始化场景
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x111111);
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            scene.add(points);
+
+            // 计算边界框并缩放
+            const box = new THREE.Box3().setFromObject(points);
+            const min = box.min;
+            const max = box.max;
+            const center = new THREE.Vector3().addVectors(min, max).multiplyScalar(0.5);
+            const size = new THREE.Vector3().subVectors(max, min);
+            const maxDim = Math.max(size.x, size.y, size.z);
+
+            const scaleFactor = 10;
+            points.scale.set(scaleFactor, scaleFactor, scaleFactor);
+            box.setFromObject(points);
+            const scaledMin = box.min;
+            const scaledMax = box.max;
+            const scaledCenter = new THREE.Vector3().addVectors(scaledMin, scaledMax).multiplyScalar(0.5);
+            const scaledSize = new THREE.Vector3().subVectors(scaledMax, scaledMin);
+            const scaledMaxDim = Math.max(scaledSize.x, scaledSize.y, scaledSize.z);
+
+            // 设置相机
+            const cameraDistance = scaledMaxDim * 1.5;
+            camera.position.set(scaledCenter.x, scaledCenter.y, scaledCenter.z + cameraDistance);
+            camera.lookAt(scaledCenter);
+
+            // 创建边界框
+            const boxGeometry = new THREE.BoxGeometry(scaledSize.x, scaledSize.y, scaledSize.z);
+            const edges = new THREE.EdgesGeometry(boxGeometry);
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+            const boundingBox = new THREE.LineSegments(edges, lineMaterial);
+            boundingBox.position.copy(scaledCenter);
+            scene.add(boundingBox);
+
+            // 创建刻度和标签
+            const ticksGroup = new THREE.Group();
+            const tickLabelsGroup = new THREE.Group();
+            scene.add(ticksGroup);
+            scene.add(tickLabelsGroup);
+
+            function createTicksAndLabels() {
+                ticksGroup.clear();
+                tickLabelsGroup.clear();
+
+                const steps = 10;
+                const xStep = scaledSize.x / steps;
+                const yStep = scaledSize.y / steps;
+                const zStep = scaledSize.z / steps;
+                const tickLength = scaledMaxDim * 0.02;
+
+                // X 轴
+                for (let i = 0; i <= steps; i++) {
+                    const x = scaledMin.x + i * xStep;
+                    const pos = new THREE.Vector3(x, scaledMin.y, scaledMin.z);
+                    const tickGeometry = new THREE.BufferGeometry().setFromPoints([
+                        pos,
+                        pos.clone().add(new THREE.Vector3(0, -tickLength, 0))
+                    ]);
+                    const tickLine = new THREE.Line(tickGeometry, new THREE.LineBasicMaterial({ color: 0xffffff }));
+                    ticksGroup.add(tickLine);
+
+                    if (settings.showTickLabels) {
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        context.font = `${settings.tickFontSize}px Arial`;
+                        const text = (x / scaleFactor).toFixed(1);
+                        const textWidth = context.measureText(text).width;
+                        canvas.width = textWidth * 1.2;
+                        canvas.height = settings.tickFontSize * 1.5;
+                        context.fillStyle = '#000000';
+                        context.fillRect(0, 0, canvas.width, canvas.height);
+                        context.font = `${settings.tickFontSize}px Arial`;
+                        context.fillStyle = '#ffffff';
+                        context.fillText(text, textWidth * 0.1, settings.tickFontSize * 1.2);
+
+                        const texture = new THREE.CanvasTexture(canvas);
+                        const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+                        const sprite = new THREE.Sprite(spriteMaterial);
+                        sprite.scale.set(canvas.width / 50, canvas.height / 50, 1);
+                        sprite.position.set(x, scaledMin.y - tickLength * 1.5, scaledMin.z);
+                        tickLabelsGroup.add(sprite);
+                    }
+                }
+
+                // Y 轴
+                for (let i = 0; i <= steps; i++) {
+                    const y = scaledMin.y + i * yStep;
+                    const pos = new THREE.Vector3(scaledMin.x, y, scaledMin.z);
+                    const tickGeometry = new THREE.BufferGeometry().setFromPoints([
+                        pos,
+                        pos.clone().add(new THREE.Vector3(-tickLength, 0, 0))
+                    ]);
+                    const tickLine = new THREE.Line(tickGeometry, new THREE.LineBasicMaterial({ color: 0xffffff }));
+                    ticksGroup.add(tickLine);
+
+                    if (settings.showTickLabels) {
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        context.font = `${settings.tickFontSize}px Arial`;
+                        const text = (y / scaleFactor).toFixed(1);
+                        const textWidth = context.measureText(text).width;
+                        canvas.width = textWidth * 1.2;
+                        canvas.height = settings.tickFontSize * 1.5;
+                        context.fillStyle = '#000000';
+                        context.fillRect(0, 0, canvas.width, canvas.height);
+                        context.font = `${settings.tickFontSize}px Arial`;
+                        context.fillStyle = '#ffffff';
+                        context.fillText(text, textWidth * 0.1, settings.tickFontSize * 1.2);
+
+                        const texture = new THREE.CanvasTexture(canvas);
+                        const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+                        const sprite = new THREE.Sprite(spriteMaterial);
+                        sprite.scale.set(canvas.width / 50, canvas.height / 50, 1);
+                        sprite.position.set(scaledMin.x - tickLength * 1.5, y, scaledMin.z);
+                        tickLabelsGroup.add(sprite);
+                    }
+                }
+
+                // Z 轴
+                for (let i = 0; i <= steps; i++) {
+                    const z = scaledMin.z + i * zStep;
+                    const pos = new THREE.Vector3(scaledMax.x, scaledMin.y, z);
+                    const tickGeometry = new THREE.BufferGeometry().setFromPoints([
+                        pos,
+                        pos.clone().add(new THREE.Vector3(0, -tickLength, 0))
+                    ]);
+                    const tickLine = new THREE.Line(tickGeometry, new THREE.LineBasicMaterial({ color: 0xffffff }));
+                    ticksGroup.add(tickLine);
+
+                    if (settings.showTickLabels) {
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        context.font = `${settings.tickFontSize}px Arial`;
+                        const text = (z / scaleFactor).toFixed(1);
+                        const textWidth = context.measureText(text).width;
+                        canvas.width = textWidth * 1.2;
+                        canvas.height = settings.tickFontSize * 1.5;
+                        context.fillStyle = '#000000';
+                        context.fillRect(0, 0, canvas.width, canvas.height);
+                        context.font = `${settings.tickFontSize}px Arial`;
+                        context.fillStyle = '#ffffff';
+                        context.fillText(text, textWidth * 0.1, settings.tickFontSize * 1.2);
+
+                        const texture = new THREE.CanvasTexture(canvas);
+                        const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+                        const sprite = new THREE.Sprite(spriteMaterial);
+                        sprite.scale.set(canvas.width / 50, canvas.height / 50, 1);
+                        sprite.position.set(scaledMax.x + tickLength * 1.5, scaledMin.y - tickLength * 1.5, z);
+                        tickLabelsGroup.add(sprite);
+                    }
+                }
+            }
+
+            // 轨道控制器
+            const controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.minDistance = scaledMaxDim * 0.1;
+            controls.maxDistance = scaledMaxDim * 10;
+            controls.target.copy(scaledCenter);
+            controls.update();
+
+            // FPS 统计
+            const stats = new Stats();
+            document.body.appendChild(stats.dom);
+
+            // GUI 设置
+            const gui = new lil.GUI();
+            const settings = {
+                showAxes: true,
+                showBoundingBox: false,
+                showTickLabels: false,
+                tickFontSize: 20,
+                showColorbar: false,
+                colorbarPosition: 'top',
+                colorbarFontSize: 20,
+                particleSize: 0.1,
+                showFPS: true,
+                colorBy: attributeNames.length > 0 ? attributeNames[0] : 'none'
+            };
+
+            const axesFolder = gui.addFolder('Axes System');
+            const axesHelper = new THREE.AxesHelper(scaledMaxDim * 0.5);
+            axesHelper.position.copy(scaledCenter);
+            scene.add(axesHelper);
+
+            axesFolder.add(settings, 'showAxes').name('- coordinate').onChange(value => {
+                axesHelper.visible = value;
+            });
+            axesFolder.add(settings, 'showBoundingBox').name('- axes').onChange(value => {
+                boundingBox.visible = value;
+                ticksGroup.visible = value;
+            });
+            axesFolder.add(settings, 'showTickLabels').name('- axes ticks').onChange(value => {
+                tickLabelsGroup.visible = value;
+            });
+            axesFolder.add(settings, 'tickFontSize', 10, 200, 1).name('- tick font size').onChange(() => {
+                createTicksAndLabels();
+                tickLabelsGroup.visible = settings.showTickLabels;
+            });
+            axesFolder.add(settings, 'showColorbar').name('- colorbar').onChange(updateColorbar);
+            axesFolder.add(settings, 'colorbarPosition', ['top', 'bottom', 'left', 'right']).name('- colorbar position').onChange(updateColorbar);
+            axesFolder.add(settings, 'colorbarFontSize', 10, 200, 1).name('- colorbar font size').onChange(updateColorbar);
+
+            const particleFolder = gui.addFolder('Particle System');
+            if (attributeNames.length > 0) {
+                particleFolder.add(settings, 'colorBy', ['none', ...attributeNames]).name('- color by').onChange(updateColors);
+            } else {
+                settings.colorBy = 'none';
+            }
+            particleFolder.add(settings, 'particleSize', 0.1, 10, 0.1).name('- particle Size').onChange(value => {
+                points.material.size = value;
+            });
+
+            gui.add(settings, 'showFPS').name('FPS Tool').onChange(value => {
+                stats.dom.style.display = value ? 'block' : 'none';
+            });
+
+            gui.add({ resetView: function() {
+                camera.position.copy(initialCameraPosition);
+                controls.target.copy(initialControlsTarget);
+                controls.update();
+            } }, 'resetView').name('Reset View');
+
+            gui.add({ particleNumber: n }, 'particleNumber').name('Particle Number').listen().disable();
+
+            // 更新颜色
+            function updateColors() {
+                if (settings.colorBy === 'none') {
+                    const color = new THREE.Color(0xff0000); // 红色
+                    const colors = new Float32Array(geometry.attributes.position.count * 3);
+                    for (let i = 0; i < geometry.attributes.position.count; i++) {
+                        colors[i * 3] = color.r;
+                        colors[i * 3 + 1] = color.g;
+                        colors[i * 3 + 2] = color.b;
+                    }
+                    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+                } else {
+                    const index = attributeNames.indexOf(settings.colorBy);
+                    if (index >= 0) {
+                        const colors = colorsList[index];
+                        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+                    }
+                }
+                geometry.attributes.color.needsUpdate = true;
+                points.material.needsUpdate = true;
+                updateColorbar();
+            }
+
+            // 颜色条
+            let colorbarContainer = null;
+            function updateColorbar() {
+                if (colorbarContainer) {
+                    document.body.removeChild(colorbarContainer);
+                    colorbarContainer = null;
+                }
+
+                if (!settings.showColorbar || settings.colorBy === 'none') return;
+
+                const index = attributeNames.indexOf(settings.colorBy);
+                if (index < 0) return;
+
+                const { min: minVal, max: maxVal } = minMaxList[index];
+
+                colorbarContainer = document.createElement('div');
+                colorbarContainer.style.position = 'absolute';
+                colorbarContainer.style.background = 'rgba(0, 0, 0, 0.7)';
+                colorbarContainer.style.padding = '10px';
+
+                const margin = 20;
+                const isHorizontal = settings.colorbarPosition === 'top' || settings.colorbarPosition === 'bottom';
+                const canvasWidth = isHorizontal ? 200 : 20;
+                const canvasHeight = isHorizontal ? 20 : 200;
+
+                switch (settings.colorbarPosition) {
+                    case 'top':
+                        colorbarContainer.style.top = `${margin}px`;
+                        colorbarContainer.style.left = '50%';
+                        colorbarContainer.style.transform = 'translateX(-50%)';
+                        break;
+                    case 'bottom':
+                        colorbarContainer.style.bottom = `${margin}px`;
+                        colorbarContainer.style.left = '50%';
+                        colorbarContainer.style.transform = 'translateX(-50%)';
+                        break;
+                    case 'left':
+                        colorbarContainer.style.left = `${margin}px`;
+                        colorbarContainer.style.top = '50%';
+                        colorbarContainer.style.transform = 'translateY(-50%)';
+                        break;
+                    case 'right':
+                        colorbarContainer.style.right = `${margin}px`;
+                        colorbarContainer.style.top = '50%';
+                        colorbarContainer.style.transform = 'translateY(-50%)';
+                        break;
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = canvasWidth;
+                canvas.height = canvasHeight;
+                const ctx = canvas.getContext('2d');
+
+                // 使用从二进制文件中读取的颜色条数据绘制
+                const step = isHorizontal ? canvasWidth / numSamples : canvasHeight / numSamples;
+                for (let i = 0; i < numSamples; i++) {
+                    const r = colorbarColors[i * 3] * 255;
+                    const g = colorbarColors[i * 3 + 1] * 255;
+                    const b = colorbarColors[i * 3 + 2] * 255;
+                    ctx.fillStyle = `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
+                    if (isHorizontal) {
+                        ctx.fillRect(i * step, 0, step + 1, canvasHeight); // +1 避免缝隙
+                    } else {
+                        ctx.fillRect(0, (numSamples - 1 - i) * step, canvasWidth, step + 1); // 从下到上绘制
+                    }
+                }
+
+                colorbarContainer.appendChild(canvas);
+
+                // 动态生成刻度标签
+                const numTicks = 5;
+                const range = maxVal - minVal;
+                const tickValues = [];
+                for (let i = 0; i < numTicks; i++) {
+                    const tickValue = minVal + (i / (numTicks - 1)) * range;
+                    tickValues.push(tickValue.toFixed(2));
+                }
+
+                tickValues.forEach((value, i) => {
+                    const tick = document.createElement('div');
+                    tick.style.position = 'absolute';
+                    tick.style.background = 'white';
+                    const label = document.createElement('div');
+                    label.textContent = value;
+                    label.style.position = 'absolute';
+                    label.style.color = 'white';
+                    label.style.fontSize = `${settings.colorbarFontSize}px`;
+                    label.style.fontFamily = 'Arial';
+
+                    const pos = (i / (numTicks - 1)) * (isHorizontal ? canvasWidth : canvasHeight);
+
+                    if (isHorizontal) {
+                        tick.style.width = '1px';
+                        tick.style.height = '10px';
+                        tick.style.left = `${pos}px`;
+                        tick.style.top = `${canvasHeight}px`;
+                        label.style.left = `${pos}px`;
+                        label.style.top = `${canvasHeight + 15}px`;
+                        label.style.transform = 'translateX(-50%)';
+                    } else {
+                        tick.style.width = '10px';
+                        tick.style.height = '1px';
+                        if (settings.colorbarPosition === 'left') {
+                            tick.style.left = `${canvasWidth}px`;
+                            label.style.left = `${canvasWidth + 15}px`;
+                        } else {
+                            tick.style.left = '0px';
+                            label.style.right = '15px';
+                            label.style.textAlign = 'right';
+                        }
+                        tick.style.bottom = `${pos}px`;
+                        label.style.bottom = `${pos}px`;
+                        label.style.transform = 'translateY(50%)';
+                    }
+                    colorbarContainer.appendChild(tick);
+                    colorbarContainer.appendChild(label);
+                });
+
+                document.body.appendChild(colorbarContainer);
+            }
+
+            // 初始化
+            createTicksAndLabels();
+            ticksGroup.visible = settings.showBoundingBox;
+            tickLabelsGroup.visible = settings.showTickLabels;
+
+            const initialCameraPosition = camera.position.clone();
+            const initialControlsTarget = controls.target.clone();
+
+            updateColors();
+
+            // 动画循环
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                stats.update();
+                tickLabelsGroup.children.forEach(label => {
+                    if (label.isSprite) label.quaternion.copy(camera.quaternion);
+                });
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            // 窗口调整
+            window.addEventListener('resize', () => {
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                updateColorbar();
+            });
+        }
+
+        // 直接调用fetchBinaryData函数
+        fetchBinaryData(binPath);
+    </script>
+</body>
+</html>
