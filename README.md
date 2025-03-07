@@ -21,12 +21,13 @@ julia> ]
 - [x] surface reconstruction (based on [splashsurf](https://github.com/LandslideSIM/MaterialPointSolver.jl))
 - [x] fast `vtp` for general particle-based results
 - [x] surface detection
+- [x] high-performance GUI (million ⬆️) 
 
 ## Showcases 🎲
 
-| ParaView |  Surface reconstruction |
-|:--------:|:--------:|
-| <img src="docs/src/assets/particle2vtp.png" width="300"> | <img src="docs/src/assets/1.gif" width="260"> |
+| ParaView |  Surface reconstruction | GUI |
+|:--------:|:--------:|:--------:|
+| <img src="docs/src/assets/particle2vtp.png" width="300"> | <img src="docs/src/assets/1.gif" width="260"> | <img src="docs/src/assets/gui.png" width="300">
 
 ## Acknowledgement 👍
 
