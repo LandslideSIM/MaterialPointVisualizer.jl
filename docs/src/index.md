@@ -1,21 +1,35 @@
-With this package, we can convert the MPM simulation results (HDF5 files from ***[MaterialPointSolver.jl](https://github.com/LandslideSIM/MaterialPointSolver.jl)*** ) into `.vtp` files or create ParaView-compatible animations. Additionally, it includes some post-processing functionalities.
+```@raw html
+---
+# https://vitepress.dev/reference/default-theme-home-page
+layout: home
 
-## Installation
+hero:
+  name: MaterialPointVisualizer.jl
+  text: MPM model postprocessor
+  tagline: A High-performance Backend-agnostic Material Point Method Solver in Julia
+  actions:
+    - theme: brand
+      text: View on GitHub 👀
+      link: https://github.com/LandslideSIM/MaterialPointVisualizer.jl
+  image:
+    src: /logo.png
+    alt: MaterialPointVisualizerr.jl
 
-Just type `]` in Julia's  `REPL`:
+features:
+  - icon: 🧰
+    title: Compatibility
+    details: Integrated with <a href="https://github.com/LandslideSIM/MaterialPointSolver.jl" target="_blank" class="highlight-link">MaterialPointSolver.jl</a>, it can be used directly to visualize calculation results; there is also a convenient API for general particle data.
 
-```julia
-julia> ]
-(@1.11) Pkg> add MaterialPointVisualizer
+  - icon: 🔍
+    title: Surface Reconstruction
+    details: To better carry out post-processing, we use <a href="https://github.com/InteractiveComputerGraphics/splashsurf" target="_blank" class="highlight-link">splashsurf</a> to reconstruct the surface from the MPM particle model, including multiple file sequences.
+
+  - icon: 👷
+    title: VTK
+    details: Support exporting to <a class="highlight-link">.vtp</a> files or animations for easy viewing or rendering in <a href="https://www.paraview.org" target="_blank" class="highlight-link">ParaView</a>.
+
+  - icon: 🖥️
+    title: GUI
+    details: We built a interactive GUI that supports millions of particles using <a href="https://threejs.org" target="_blank" class="highlight-link">Three.js</a>, which can automatically return to the local browser for immediate viewing even on a remote headless server.
+---
 ```
-
-## Features
-
-- HDF5 to `.vtp` files
-- surface reconstruction (based on [splashsurf](https://github.com/InteractiveComputerGraphics/splashsurf))
-- fast `vtp` for general particle-based results
-- surface detection
-
-## Acknowledgement
-
-This project is sponserd by [Risk Group | Université de Lausanne](https://wp.unil.ch/risk/) and [China Scholarship Council [中国国家留学基金管理委员会]](https://www.csc.edu.cn/).
