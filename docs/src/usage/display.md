@@ -8,7 +8,7 @@ We implemented a high-performance rapid visualization solution using [Three.js](
 
 !!! warning
 
-    If your data is large on a remote server, such as over a million, then you need to wait for the data to be transferred locally. We use a binary file for saving. During this process, the web page content is blank. Just give me the translation result directly.
+    If your data is large on a remote server, such as over a million, then you need to wait for the data to be transferred locally. We use a binary file for saving. During this process, the web page content is blank.
 
 ## Example
 
