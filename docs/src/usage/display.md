@@ -28,7 +28,7 @@ attr = (xcoord=coords[:, 1], zcoord=coords[:, 3]) # vertices' attibutes
 vispts(coords, colormap="viridis", attrs=attr, gui=true)
 ```
 
-If everything is normal, you should now see a separate window displaying the particles. If `gui=false`, then the Julia REPL should print an address for you to check in your browser.
+If everything is fine, you should now see a separate window displaying the particles. If `gui=false`, then the Julia REPL should print an address for you to check in your browser.
 
 ![exampleGUI](../assets/example.png)
 
