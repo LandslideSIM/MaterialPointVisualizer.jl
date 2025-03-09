@@ -1,16 +1,17 @@
-using Documenter, DocumenterTools, MaterialPointVisualizer, MaterialPointSolver
+using Documenter, DocumenterVitepress, MaterialPointVisualizer, MaterialPointSolver
 
 makedocs(
     modules = [MaterialPointVisualizer, MaterialPointSolver],
-    format = Documenter.HTML(
-        assets = ["assets/favicon.ico"],
-        prettyurls = get(ENV, "CI", nothing) == "true"
+    format = DocumenterVitepress.MarkdownVitepress(
+        repo = "github.com/LandslideSIM/MaterialPointVisualizer.jl",
+        devbranch = "main",
+        devurl = "dev"
     ),
-    clean = false,
     sitename = "MaterialPointVisualizer.jl",
     authors = "Zenan Huo",
     pages = [
         "Home" => "index.md",
+        "getstarted.md",
         "Usage" => Any[
             "usage/particle2vtp.md",
             "usage/mpm2vtp.md",
@@ -23,8 +24,9 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/LandslideSIM/MaterialPointVisualizer.jl.git",
+    repo = "github.com/LandslideSIM/MaterialPointVisualizer.jl",
     target = "build",
+    devbranch = "main",
     branch = "gh-pages",
-    versions=["stable" => "v^", "dev" => "dev"] 
+    push_preview = true,
 )
