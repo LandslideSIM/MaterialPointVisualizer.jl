@@ -78,7 +78,7 @@ export default defineConfig({
     nav: [
       { text: "Home 🏠", link: "/" },
       { text: "Manual 📖", link: "/getstarted" },
-      { text: "Have a try 🖼️", link: "/haveatry" },
+      { text: "Have a try 🖼️", link: "https://landslidesim.github.io/VisualizerOnline/" },
     ],
     sidebar: 'REPLACE_ME_DOCUMENTER_VITEPRESS',
     editLink: 'REPLACE_ME_DOCUMENTER_VITEPRESS',

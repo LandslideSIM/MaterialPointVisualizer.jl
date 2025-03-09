@@ -6,12 +6,9 @@
   },
   "dependencies": {
     "@nolebase/vitepress-plugin-enhanced-readabilities": "^2.14.0",
-    "lil-gui": "^0.20.0",
     "markdown-it": "^14.1.0",
     "markdown-it-footnote": "^4.0.0",
     "markdown-it-mathjax3": "^4.3.2",
-    "stats.js": "^0.17.0",
-    "three": "^0.174.0",
     "vitepress": "^1.6.3",
     "vitepress-plugin-tabs": "^0.6.0"
   }
