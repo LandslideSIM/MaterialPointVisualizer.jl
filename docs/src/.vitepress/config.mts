@@ -86,7 +86,7 @@ export default defineConfig({
       { icon: 'github', link: 'REPLACE_ME_DOCUMENTER_VITEPRESS' }
     ],
     footer: {
-      message: 'Made with <a href="https://luxdl.github.io/DocumenterVitepress.jl/dev/" target="_blank"><strong>DocumenterVitepress.jl</strong></a><br>',
+      message: '⛰️ <a href="https://github.com/LandslideSIM" target="_blank">LandslideSIM</a> | <a href="https://wp.unil.ch/risk/" target="_blank">Risk Group</a> | Université de Lausanne<br>',
       copyright: `© Copyright ${new Date().getUTCFullYear()}.`
     }
   }
