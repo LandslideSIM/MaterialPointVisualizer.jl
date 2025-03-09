@@ -3,7 +3,7 @@
 [![CI](https://github.com/LandslideSIM/MaterialPointVisualizer.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/LandslideSIM/MaterialPointVisualizer.jl/actions/workflows/ci.yml) 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg?logo=quicklook)](https://LandslideSIM.github.io/MaterialPointVisualizer.jl/stable)
 [![Dev](https://img.shields.io/badge/docs-dev-red.svg?logo=quicklook)](https://LandslideSIM.github.io/MaterialPointVisualizer.jl/dev)
-[![Version](https://img.shields.io/badge/version-v0.1.4-pink)]()
+[![Version](https://img.shields.io/badge/version-v0.1.5-pink)]()
 
 With this package, we can convert the MPM simulation results (HDF5 files from ***[MaterialPointSolver.jl](https://github.com/LandslideSIM/MaterialPointSolver.jl)*** ) into `.vtp` files or create ParaView-compatible animations. Additionally, it includes some post-processing functionalities.
 
