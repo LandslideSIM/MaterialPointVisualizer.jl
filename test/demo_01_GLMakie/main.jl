@@ -1,4 +1,4 @@
-using GLMakie
+using WGLMakie
 using StatsBase
 using MaterialPointGenerator
 
@@ -12,12 +12,12 @@ attr = z
     attr     ::Vector,
     colorby  ::String="values",
     axis     ::Bool  =false, 
-    pointsize::Real  =2, 
-    colormap ::Symbol=:viridis,
+    pointsize::Real  =1, 
+    colormap ::Symbol=:redblue,
     colorbar ::Bool  =false
 )
     # input check and preparation
-    points .= Float32.(points) 
+    points .= Array{Float32, 2}(points) 
     pdims = size(points, 2)
     pdims in [2, 3] || throw(ArgumentError("points must be 2D or 3D"))
 
@@ -26,10 +26,10 @@ attr = z
     if pnums > 1_000_000
         vid = sort(sample(1:pnums, 1_000_000; replace=false))
         vpoints = points[vid, :]
-        vattr = attr[vid]
+        vattr = Array{Float32, 1}(attr[vid])
     else
         vpoints = points
-        vattr = attr
+        vattr = Array{Float32, 1}(attr)
     end
 
     # add z=0 if 2D
@@ -38,18 +38,19 @@ attr = z
     end
 
     # create a scene
-    with_theme(theme_dark()) do
-        fig = Figure()
-        ax = LScene(fig[1, 1], show_axis=axis)
-        plt = scatter!(ax, vpoints, color=attr, markersize=pointsize, colormap=colormap,
-            transparency=false, depthsorting=true)
-        if colorbar
-            Colorbar(fig[1, 2], plt, label=colorby, spinewidth=0)
-        end
-        display(fig)
+    set_theme!(theme_dark())
+    fig = Figure()
+    ax = LScene(fig[1, 1], show_axis=axis, scenekw=(;clear=true))
+    plt = scatter!(ax, vpoints, color=vattr, markersize=pointsize, colormap=colormap,
+        transparency=false, depthsorting=false, marker=:rect)
+    if colorbar
+        Colorbar(fig[1, 2], plt, label=colorby, spinewidth=0)
     end
 
-    return @info "GUI showed $(size(vpoints, 1)) particles"
+    @info "GUI showed $(size(vpoints, 1)) particles"
+    display(fig)
+    
+    return nothing
 end
 
 GUIdisplay(points, attr=attr, colorbar=true)
