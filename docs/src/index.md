@@ -30,6 +30,6 @@ features:
 
   - icon: 🖥️
     title: GUI
-    details: We built a interactive GUI that supports millions of particles using <a href="https://threejs.org" target="_blank" class="highlight-link">Three.js</a>, which can automatically return to the local browser for immediate viewing even on a remote headless server.
+    details: We built a interactive GUI that supports millions of particles using WGLMakie, which can automatically return to the local browser/VSCode for immediate viewing.
 ---
 ```
