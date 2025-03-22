@@ -10,85 +10,75 @@
 
 export vispts
 
+include(joinpath(@__DIR__, "plotutils.jl"))
+
 """
-    vispts(coord::Matrix; colormap="viridis", attrs=NamedTuple(), gui=false, sample_n=3600000)
+    vispts(coord, colormap::Symbol=:viridis, colorby::String="-1", attr::Vector=[-1], 
+        psize::Float32=1f-2, sample_n::Int=1000000)
 
 Description:
 ---
-Visualize the particles in a local GUI window or website. 
+Visualize the particles in a browser/VSCode using WGLMakie.
 
-- `coord` is a matrix of the particle coordniates, it can be 2/3 colomns for 2/3D 
-visualization. 
-- `colormap` is the color theme will be used in the visualization. By default, it is
-set to "viridis". [optional]
-- `attrs` is a NamedTuple of the attributes of the particles, the keys are the attribute 
-names and the values are the attribute values. [optional]
-- `gui` is a boolean value to determine whether to open a local GUI window or a website. By
-default, it is set to false, i.e., website mode. [optional]
-- `sample_n` is the number of particles to be sampled for visualization. By default, it
-is set to 3,600,000. [optional]
+- coord: The coordinates of the particles. It should be a 2D or 3D array of shape (n, m), 
+where n is the number of particles and m is the dimension (2 or 3).
+- colormap [option]: The colormap to use for the visualization. Default is :viridis.
+- colorby [option]: The attribute to color the particles by. Default is "-1", which means
+    the z-coordinate. If attr is provided, it will be used instead.
+- attr [option]: The attributes of the particles. It should be a vector of length n.
+- psize [option]: The size of the particles in the visualization. Default is 1e-2.
+- sample_n [option]: The number of particles to sample for visualization. Default is 1,000,000.
+    If the number of particles exceeds this value, a random sample will be taken.
+
+Examples:
+---
+```julia
+vispts(rand(10, 3))
+vispts(rand(10, 3), colorby="random vals", attr=rand(10), psize=1f0, sample_n=5, colormap=:jet)
+```
 """
 @views function vispts(
     coord   ::Matrix;
-    colormap::String    ="viridis", 
-    attrs   ::NamedTuple=NamedTuple(), 
-    gui     ::Bool      =false,
-    sample_n::Int       =3600000
+    colormap::Symbol=:viridis,
+    colorby ::String="-1",
+    attr    ::Vector=[-1],
+    psize   ::Float32=1f-2,
+    sample_n::Int=1000000
 )
     # check input file
-    if gui
-        tmp_dir = tempdir()
-    else
-        cp(joinpath(@__DIR__, "../../libs"), joinpath(tempdir(), "libs"), force=true)
-        tmp_dir = joinpath(tempdir(), "libs")
-        mv(joinpath(tmp_dir, "remote.html"), 
-           joinpath(tmp_dir, "index.html"), force=true)
-        rm(joinpath(tmp_dir, "local.html"))
-    end
-    bin_file = joinpath(tmp_dir, "MaterialPointVisualizerTEMP.bin")
     n, m = size(coord)
     m in [2, 3] || error("The provided coord must have 2/3 columns (2D, 3D)")
     if n > sample_n
         vid = sort(sample(1:n, sample_n; replace=false))
-        coord = coord[vid, :]
+        coord = Array{Float32}(coord[vid, :])
         n = sample_n
-    else
+    else 
+        coord = Array{Float32}(coord)
         vid = 1:n
     end
     m == 2 ? coord = hcat(coord, zeros(Float32, n)) : nothing
-    attrs_num = length(attrs)
-    if attrs_num > 0
-        attr_name = [String(name) for name in keys(attrs)]
-        data      = Array{Float32, 2}(hcat(coord, zeros(Float32, n, attrs_num)))
-        for i in 1:attrs_num
-            data[:, 3+i] .= values(attrs[Symbol(attr_name[i])])[vid, :]
-        end
-    else
-        attr_name = ["Z-coord"]
-        data = Array{Float32, 2}(hcat(coord, coord[:, 3]))
+    if colorby == "-1" && attr == [-1]
+        colorby = "z-coord"
     end
-    write_bin_file(data, attr_name, colormap, bin_file)
-    isfile(bin_file) || error("File not found: $bin_file")
-
-    if gui
-        # 初始化 Electron 窗口，启用 nodeIntegration
-        win = Window(URI("file://$(normpath(joinpath(@__DIR__, "../../libs/local.html")))"),
-            options=Dict("webPreferences" => Dict("nodeIntegration" => true, 
-                "contextIsolation" => false)))
-
-        # 调用 JavaScript 函数读取二进制文件
-        run(win, "fetchBinaryData('$((bin_file))')")
-
-        # 窗口关闭逻辑
-        ch = msgchannel(win)
-        while true
-            sleep(1)
-            if ch.state == :closed
-                close(win.app)
-                break
-            end
-        end
+    if attr == [-1]
+        attr = Array{Float32}(coord[:, 3])
     else
-        serve(host="127.0.0.1", dir=tmp_dir, launch_browser=false)
+        attr = Array{Float32}(attr[vid])
+        n == length(attr) || error("The provided attr must have the same length as coord")
     end
+    
+    # create a new figure
+    Makie.set_theme!(WGLMakie=(resize_to=:body,), gettheme())
+    fig = Figure()
+    ax = LScene(fig[1, 1], show_axis=false)
+    vmin = round.(vec(minimum(coord, dims=1)), digits=2)
+    vmax = round.(vec(maximum(coord, dims=1)), digits=2)
+    Label(fig[1, 1, Top()], "Particle Number: $n")
+    Label(fig[1, 1, Bottom()], "\nvmin: $(vmin) | vmax: $(vmax)", justification=:left)
+    plt = scatter!(ax, coord, color=attr, markersize=psize, colormap=colormap, 
+        transparency=false, depthsorting=false, marker=:rect)
+    Colorbar(fig[1, 2], plt, label=colorby, spinewidth=0)
+    display(fig)
+
+    return nothing
 end

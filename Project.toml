@@ -1,35 +1,31 @@
 name = "MaterialPointVisualizer"
 uuid = "9ce2fbfb-c269-402f-8683-a675189e795c"
 authors = ["ZenanH <zenan.huo@outlook.com>"]
-version = "0.1.7"
+version = "0.1.8"
 
 [deps]
-ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
 CondaPkg = "992eb4ea-22a4-4c89-a5bb-47a3300528ab"
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
-Electron = "a1bb12fb-d4d1-54b4-b10a-ee7951ef7ad3"
 HDF5 = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
-LiveServer = "16fef848-5104-11e9-1b77-fb7a48bbb589"
 NearestNeighbors = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
 MaterialPointSolver = "dc4aa359-7d89-437d-91bb-f4b330c522c1"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+WGLMakie = "276b4fcb-3e11-5398-bf8b-a0c2d153d008"
 WriteVTK = "64499a7a-5c06-52f2-abe2-ccb03c286192"
 
 [compat]
-ColorSchemes = "3.29"
 CondaPkg = "0.2"
 DelimitedFiles = "1"
-Electron = "6.0"
 HDF5 = "0.17"
-LiveServer = "1.4"
 NearestNeighbors = "0.4"
 MaterialPointSolver = "0.4"
 ProgressMeter = "1.10"
 PythonCall = "0.9"
 StatsBase = "0.34"
+WGLMakie = "0.11"
 WriteVTK = "1.21"
 julia = "1.11"
 
