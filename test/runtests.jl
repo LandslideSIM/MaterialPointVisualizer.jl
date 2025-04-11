@@ -1,4 +1,5 @@
-using MaterialPointVisualizer 
+using MaterialPointVisualizer
+using PythonCall
 using Test
 
-@test !isnothing(MaterialPointVisualizer.trimesh[])
+@test !pyconvert(Bool, PythonCall.pyisnull(MaterialPointVisualizer.trimesh))

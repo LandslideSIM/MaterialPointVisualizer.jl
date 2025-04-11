@@ -34,8 +34,9 @@ ply2surface(
     splash_dir,
     radius,
     num_threads;
-    cube_size        =0.6,
-    surface_threshold=0.6, 
-    smoothing_length =1.2
+    cube_size          = 0.6,
+    surface_threshold  = 0.6, 
+    smoothing_length   = 1.2,
+    splashsurf::String = "nothing"
 )
 ```
