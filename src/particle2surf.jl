@@ -31,7 +31,7 @@ function particle2ply(coords::Matrix; output_file::String="coord.ply")
         coords = hcat(coords, zeros(size(coords, 1)))
     end
     # export .ply file by using trimesh
-    mesh = trimesh[].Trimesh(vertices=coords)
+    mesh = trimesh.Trimesh(vertices=coords)
     mesh.export(output_file)
     # print info
     @info """PLY file ($(size(coords, 1)) pts) saved at:
@@ -55,7 +55,7 @@ function particle2ply(
     output_file = joinpath(args.project_path, args.project_name, filename)
     coords = hcat(mp.ξ, zeros(mp.np))
     # export .ply file by using trimesh
-    mesh = trimesh[].Trimesh(vertices=coords)
+    mesh = trimesh.Trimesh(vertices=coords)
     mesh.export(output_file)
     # print info
     @info """PLY file ($(size(coords, 1)) pts) saved at:
@@ -78,7 +78,7 @@ function particle2ply(
     filename = args.project_name * ".ply"
     output_file = joinpath(args.project_path, args.project_name, filename)
     # export .ply file by using trimesh
-    mesh = trimesh[].Trimesh(vertices=mp.ξ)
+    mesh = trimesh.Trimesh(vertices=mp.ξ)
     mesh.export(output_file)
     # print info
     @info """PLY file ($(mp.np) pts) saved at:
@@ -114,7 +114,7 @@ function particle2ply(hdf5_file::String, ply_dir::String)
         end
         output_file = joinpath(ply_dir, "iteration_$(i).ply")
         # export .ply file by using trimesh
-        mesh = trimesh[].Trimesh(vertices=obj)
+        mesh = trimesh.Trimesh(vertices=obj)
         mesh.export(output_file)
         next!(p)
     end
@@ -127,7 +127,7 @@ end
 
 """
     ply2surface(ply_dir, splash_dir, radius, num_threads; cube_size=0.6, 
-        surface_threshold=0.6, smoothing_length=1.2)
+        surface_threshold=0.6, smoothing_length=1.2, splashsurf="nothing")
 
 Description:
 ---
@@ -148,10 +148,41 @@ function ply2surface(
     splash_dir,
     radius,
     num_threads;
-    cube_size        =0.6,
-    surface_threshold=0.6, 
-    smoothing_length =1.2
+    cube_size          = 0.6,
+    surface_threshold  = 0.6, 
+    smoothing_length   = 1.2,
+    splashsurf::String = "nothing"
 )
+    if splashsurf == "nothing"
+        try
+            run(pipeline(`splashsurf -V`, stdout=devnull, stderr=devnull))
+        catch e
+            if isa(e, Base.IOError)  # splashsurf 未安装
+                @warn """splashsurf
+                Cannot find splashsurf on this system. If you need surface reconstruction, please
+                install it first, and make sure Julia can find it.
+                Or you can pass the path of splashsurf to ply2surface.
+                link: https://github.com/InteractiveComputerGraphics/splashsurf 
+                """
+            end
+        end
+        splashsurfcmd = "splashsurf"
+    else
+        try
+            run(pipeline(`$(splashsurf) -V`, stdout=devnull, stderr=devnull))
+        catch e
+            if isa(e, Base.IOError)  # splashsurf 未安装
+                @warn """invalid splashsurf path
+                Cannot find splashsurf on this system. If you need surface reconstruction, please
+                install it first, and make sure Julia can find it.
+                Or you can pass the path of splashsurf to ply2surface.
+                link: https://github.com/InteractiveComputerGraphics/splashsurf 
+                """
+            end
+        end
+        splashsurfcmd = splashsurf
+    end
+
     num_threads = 1 ≤ num_threads ≤ Sys.CPU_THREADS ? num_threads : Sys.CPU_THREADS
     splash_dir ≠ ply_dir || throw(ArgumentError(
         "The splash output directory should be different from the ply input directory"))
@@ -159,7 +190,7 @@ function ply2surface(
     if isfile(ply_dir)
         inputs = ply_dir
         outputs = joinpath(splash_dir, "surface.vtk")
-        run(`splashsurf reconstruct $(inputs) --output-file=$(outputs)
+        run(`$(splashsurfcmd) reconstruct $(inputs) --output-file=$(outputs)
             --particle-radius=$(radius*1.5)
             --cube-size=$(cube_size)
             --surface-threshold=$(surface_threshold)
@@ -174,7 +205,7 @@ function ply2surface(
     elseif isdir(ply_dir)
         inputs = joinpath(ply_dir, "iteration_{}.ply")
         outputs = joinpath(splash_dir, "iteration_{}.vtk")
-        run(`splashsurf reconstruct $(inputs) --output-file=$(outputs)
+        run(`$(splashsurfcmd) reconstruct $(inputs) --output-file=$(outputs)
             --particle-radius=$(radius*1.5)
             --cube-size=$(cube_size)
             --surface-threshold=$(surface_threshold)
