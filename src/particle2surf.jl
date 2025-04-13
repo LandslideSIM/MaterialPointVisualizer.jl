@@ -127,7 +127,8 @@ end
 
 """
     ply2surface(ply_dir, splash_dir, radius, num_threads; cube_size=0.6, 
-        surface_threshold=0.6, smoothing_length=1.2, splashsurf="nothing")
+        surface_threshold=0.6, smoothing_length=1.2, output_format="obj", 
+        splashsurf="nothing")
 
 Description:
 ---
@@ -151,6 +152,7 @@ function ply2surface(
     cube_size          = 0.6,
     surface_threshold  = 0.6, 
     smoothing_length   = 1.2,
+    output_format::String = "obj",
     splashsurf::String = "nothing"
 )
     if splashsurf == "nothing"
@@ -183,13 +185,14 @@ function ply2surface(
         splashsurfcmd = splashsurf
     end
 
+    output_format = output_format ∈ ["obj", "ply"] ? output_format : "obj"
     num_threads = 1 ≤ num_threads ≤ Sys.CPU_THREADS ? num_threads : Sys.CPU_THREADS
     splash_dir ≠ ply_dir || throw(ArgumentError(
         "The splash output directory should be different from the ply input directory"))
     isdir(splash_dir) || mkpath(splash_dir)
     if isfile(ply_dir)
         inputs = ply_dir
-        outputs = joinpath(splash_dir, "surface.vtk")
+        outputs = joinpath(splash_dir, "surface.$(output_format)")
         run(`$(splashsurfcmd) reconstruct $(inputs) --output-file=$(outputs)
             --particle-radius=$(radius*1.5)
             --cube-size=$(cube_size)
@@ -204,7 +207,7 @@ function ply2surface(
         )
     elseif isdir(ply_dir)
         inputs = joinpath(ply_dir, "iteration_{}.ply")
-        outputs = joinpath(splash_dir, "iteration_{}.vtk")
+        outputs = joinpath(splash_dir, "iteration_{}.$(output_format)")
         run(`$(splashsurfcmd) reconstruct $(inputs) --output-file=$(outputs)
             --particle-radius=$(radius*1.5)
             --cube-size=$(cube_size)
