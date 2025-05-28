@@ -37,6 +37,7 @@ ply2surface(
     cube_size          = 0.6,
     surface_threshold  = 0.6, 
     smoothing_length   = 1.2,
+    output_format::String = "obj",
     splashsurf::String = "nothing"
 )
 ```

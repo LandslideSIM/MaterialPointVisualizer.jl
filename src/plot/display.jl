@@ -14,7 +14,7 @@ include(joinpath(@__DIR__, "plotutils.jl"))
 
 """
     vispts(coord, colormap::Symbol=:viridis, colorby::String="-1", attr::Vector=[-1], 
-        psize::Float32=1f-2, sample_n::Int=1000000)
+        psize::Real=1f-2, sample_n::Int=1000000)
 
 Description:
 ---
@@ -42,7 +42,7 @@ vispts(rand(10, 3), colorby="random vals", attr=rand(10), psize=1f0, sample_n=5,
     colormap::Symbol=:viridis,
     colorby ::String="-1",
     attr    ::Vector=[-1],
-    psize   ::Float32=1f-2,
+    psize   ::Real=1f-2,
     sample_n::Int=1000000
 )
     # check input file

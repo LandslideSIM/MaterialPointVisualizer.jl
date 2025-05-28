@@ -20,10 +20,10 @@ import MaterialPointSolver: DeviceArgs2D, DeviceGrid2D, DeviceParticle2D, Device
 
 const trimesh = PythonCall.pynew()
 
-include(joinpath(@__DIR__, "mpm2vtp.jl"       ))
-include(joinpath(@__DIR__, "particle2vtp.jl"  ))
-include(joinpath(@__DIR__, "particle2surf.jl" ))
-include(joinpath(@__DIR__, "plot/display.jl"  ))
+include(joinpath(@__DIR__, "mpm2vtp.jl"      ))
+include(joinpath(@__DIR__, "particle2vtp.jl" ))
+include(joinpath(@__DIR__, "particle2surf.jl"))
+include(joinpath(@__DIR__, "plot/display.jl" ))
 
 function __init__()
     @info "checking environment..."
