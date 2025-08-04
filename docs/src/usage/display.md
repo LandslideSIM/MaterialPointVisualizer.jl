@@ -11,11 +11,21 @@ This implementation is achieved through [WGLMakie.jl](https://github.com/MakieOr
 ```@docs
 vispts(
     coord   ::Matrix;
-    colormap::Symbol=:viridis,
-    colorby ::String="-1",
-    attr    ::Vector=[-1],
-    psize   ::Float32=1f-2,
+    colorby ::String,
+    attr    ::Vector,
+    psize   ::Real,
+    colormap::Symbol=:turbo,
     sample_n::Int=1000000
+)
+
+visvol(
+    coord   ::Matrix;
+    colorby ::String,
+    attr    ::Vector,
+    vsize   ::Real,
+    colormap::Symbol=:turbo,
+    sample_n::Int=1000000,
+    ncolors ::Int=64
 )
 ```
 

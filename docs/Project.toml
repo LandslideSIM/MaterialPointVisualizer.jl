@@ -1,7 +1,6 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 DocumenterVitepress = "4710194d-e776-4893-9690-8d956a29c365"
-MaterialPointSolver = "dc4aa359-7d89-437d-91bb-f4b330c522c1"
 MaterialPointVisualizer = "9ce2fbfb-c269-402f-8683-a675189e795c"
 
 [sources]
@@ -10,4 +9,3 @@ MaterialPointVisualizer = {path = ".."}
 [compat]
 Documenter = "1.8"
 DocumenterVitepress = "0.1"
-MaterialPointSolver = "0.4"

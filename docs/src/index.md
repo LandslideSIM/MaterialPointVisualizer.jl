@@ -29,7 +29,7 @@ features:
     details: Support exporting to <a class="highlight-link">.vtp</a> files or animations for easy viewing or rendering in <a href="https://www.paraview.org" target="_blank" class="highlight-link">ParaView</a>.
 
   - icon: 🖥️
-    title: GUI
+    title: GUI (experiment)
     details: We built a interactive GUI that supports millions of particles using WGLMakie, which can automatically return to the local browser/VSCode for immediate viewing.
 ---
 ```

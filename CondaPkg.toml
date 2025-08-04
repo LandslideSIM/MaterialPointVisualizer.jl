@@ -1,4 +1,0 @@
-channels = ["anaconda", "conda-forge"]
-
-[deps]
-trimesh = "==4.6.6"
