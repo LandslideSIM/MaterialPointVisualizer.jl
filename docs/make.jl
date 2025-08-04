@@ -1,7 +1,7 @@
-using Documenter, DocumenterVitepress, MaterialPointVisualizer, MaterialPointSolver
+using Documenter, DocumenterVitepress, MaterialPointVisualizer
 
 makedocs(
-    modules = [MaterialPointVisualizer, MaterialPointSolver],
+    modules = [MaterialPointVisualizer],
     format = DocumenterVitepress.MarkdownVitepress(
         repo = "github.com/LandslideSIM/MaterialPointVisualizer.jl",
         devbranch = "main",
@@ -13,9 +13,9 @@ makedocs(
         "Home" => "index.md",
         "getstarted.md",
         "Usage" => Any[
-            "usage/particle2vtp.md",
-            "usage/mpm2vtp.md",
-            "usage/surfreconstruction.md",
+            "usage/pts2vtp.md",
+            "usage/hdf2pvd.md",
+            "usage/pts2surf.md",
             "usage/display.md"
         ],
         # "utils.md"
