@@ -1,9 +1,4 @@
-using GLMakie
-using ColorSchemes
-
 """
-
-
 function torus_points(n)
     R = 1.0
     r = 0.3
@@ -36,12 +31,12 @@ let
     display(fig)
 end
 """
-function voxelize_with_colormap(
+function _voxelize_with_colormap(
     points    ::AbstractMatrix{<:Real},
-    values    ::AbstractVector{<:Real};
-    voxelsize ::Real = 0.01,
-    colormap  ::Symbol = :viridis,
-    ncolors   ::Int = 64
+    values    ::AbstractVector{<:Real},
+    voxelsize ::Real,
+    colormap  ::Symbol,
+    ncolors   ::Int
 )
     @assert size(points, 2) == length(values)
 

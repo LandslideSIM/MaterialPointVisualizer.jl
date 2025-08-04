@@ -11,24 +11,24 @@
 
 module MaterialPointVisualizer
 
-using CondaPkg, DelimitedFiles, HDF5, NearestNeighbors, Printf, ProgressMeter, PythonCall, 
-      WGLMakie, WriteVTK
+using ColorSchemes, Dates, DelimitedFiles, HDF5, NearestNeighbors, Printf, WGLMakie, WriteVTK
 
 import StatsBase: sample
-import MaterialPointSolver: DeviceArgs2D, DeviceGrid2D, DeviceParticle2D, DeviceProperty,
-                            DeviceArgs3D, DeviceGrid3D, DeviceParticle3D     
+import FastPointQuery: trimesh, splashsurf, np, meshio
 
-const trimesh = PythonCall.pynew()
-
-include(joinpath(@__DIR__, "mpm2vtp.jl"      ))
-include(joinpath(@__DIR__, "particle2vtp.jl" ))
-include(joinpath(@__DIR__, "particle2surf.jl"))
-include(joinpath(@__DIR__, "plot/display.jl" ))
-
-function __init__()
-    @info "checking environment..."
-    # import Python modules
-    PythonCall.pycopy!(trimesh, pyimport("trimesh"))
+@inline function format_seconds(s_time)
+    s = s_time < 1 ? 1.0 : ceil(Int, s_time)
+    dt = Dates.Second(s)
+    days = Dates.value(dt) ÷ (60 * 60 * 24)
+    time = Dates.Time(Dates.unix2datetime(Dates.value(dt) % (60 * 60 * 24)))
+    return days == 0 ?
+        Dates.format(time, "HH:MM:SS") :
+        @sprintf("%02d days: %s", days, Dates.format(time, "HH:MM:SS"))
 end
+
+include(joinpath(@__DIR__, "hdf2pvd.jl"     ))
+include(joinpath(@__DIR__, "pts2vtp.jl"     ))
+include(joinpath(@__DIR__, "pts2surf.jl"    ))
+include(joinpath(@__DIR__, "plot/display.jl"))
 
 end
