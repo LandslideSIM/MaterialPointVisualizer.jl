@@ -11,7 +11,7 @@
 
 module MaterialPointVisualizer
 
-using ColorSchemes, Dates, DelimitedFiles, HDF5, NearestNeighbors, Printf, WGLMakie, WriteVTK
+using ColorSchemes, Dates, DelimitedFiles, HDF5, Logging, PrecompileTools, Printf, WGLMakie, WriteVTK
 
 import StatsBase: sample
 import FastPointQuery: trimesh, splashsurf, np, meshio
@@ -30,5 +30,15 @@ include(joinpath(@__DIR__, "hdf2pvd.jl"     ))
 include(joinpath(@__DIR__, "pts2vtp.jl"     ))
 include(joinpath(@__DIR__, "pts2surf.jl"    ))
 include(joinpath(@__DIR__, "plot/display.jl"))
+
+quiet(f) = redirect_stdout(devnull) do
+    redirect_stderr(devnull) do
+        with_logger(NullLogger()) do
+            f()
+        end
+    end
+end
+
+include(joinpath(@__DIR__, "precompile.jl"))
 
 end
