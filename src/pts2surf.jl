@@ -62,8 +62,8 @@ function pts2surf(coords::AbstractArray, output_file::String;
     subdomain_num_cubes_per_dim::Int=64,
     output_mesh_smoothing_weights::Bool=true
 )
-    @assert size(coords, 1) ∈ (2, 3) "coords should be a 2D or 3D array"
-    particles = np.array(coords', dtype=np.float64)
+    @assert size(coords, 2) ∈ (2, 3) "coords should be a 2D or 3D array"
+    particles = np.array(coords, dtype=np.float64)
     @assert isfile(output_file) "output_file should be a valid file path"
     file_name = endswith(lowercase(output_file), ".obj") ? output_file : output_file * ".obj"
     mesh_with_data, reconstruction = splashsurf.reconstruction_pipeline(particles,
@@ -177,7 +177,7 @@ function hdf2surf(conf::NamedTuple;
     t1, t_start = time(), time()
     @inbounds for (step, (gname, t)) in enumerate(groups)
         grp = fid[gname]
-        coords = read(grp["ξ"])'  # 读取粒子坐标
+        coords = read(grp["ξ"])  # 读取粒子坐标
         obj_filename = joinpath(obj_path, "$(@sprintf("%08d", step)).obj")
         pts2surf(coords, obj_filename;
             radius=radius,
