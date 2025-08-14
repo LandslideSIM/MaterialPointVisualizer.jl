@@ -11,7 +11,8 @@
 
 module MaterialPointVisualizer
 
-using ColorSchemes, Dates, DelimitedFiles, HDF5, Logging, PrecompileTools, Printf, WGLMakie, WriteVTK
+using ColorSchemes, Dates, DelimitedFiles, HDF5, Logging, PrecompileTools, Printf,
+    ProgressMeter, #=WGLMakie,=# WriteVTK
 
 import StatsBase: sample
 import FastPointQuery: trimesh, splashsurf, np, meshio
