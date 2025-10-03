@@ -19,12 +19,14 @@ Description:
 Generates a `.vtp` file by passing custom fields.
 """
 function pts2vtp(coords; vtp_file="output.vtp", data::NamedTuple=NamedTuple())
-    pts_num = size(coords, 2)
-    size(coords, 1) in [2, 3] || throw(ArgumentError("The input coordinates should be 2D or 3D"))
+    pts_num = size(coords, 1)
+    size(coords, 2) in [2, 3] || throw(ArgumentError("The input coordinates should be 2D or 3D"))
     vtp_cls = [MeshCell(PolyData.Verts(), [i]) for i in 1:pts_num]
-    vtk_grid(vtp_file, coords, vtp_cls; compress=true, append=false, ascii=false) do vtk
+    vtk_grid(vtp_file, coords', vtp_cls; compress=true, append=false, ascii=false) do vtk
         keys(data) ≠ () && for vtp_key in keys(data)
-            vtk[string(vtp_key)] = getfield(data, vtp_key)
+            vdata = getfield(data, vtp_key)
+            vdata = ndims(vdata) == 2 ? permutedims(vdata) : vdata
+            vtk[string(vtp_key)] = vdata
         end
     end
 end

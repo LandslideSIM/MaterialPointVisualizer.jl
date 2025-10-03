@@ -11,7 +11,8 @@
 
 module MaterialPointVisualizer
 
-using ColorSchemes, Dates, DelimitedFiles, HDF5, Logging, PrecompileTools, Printf, WGLMakie, WriteVTK
+using ColorSchemes, Dates, DelimitedFiles, HDF5, Logging, PrecompileTools, Printf,
+    ProgressMeter, #=WGLMakie,=# WriteVTK
 
 import StatsBase: sample
 import FastPointQuery: trimesh, splashsurf, np, meshio
@@ -26,10 +27,10 @@ import FastPointQuery: trimesh, splashsurf, np, meshio
         @sprintf("%02d days: %s", days, Dates.format(time, "HH:MM:SS"))
 end
 
-include(joinpath(@__DIR__, "hdf2pvd.jl"     ))
-include(joinpath(@__DIR__, "pts2vtp.jl"     ))
-include(joinpath(@__DIR__, "pts2surf.jl"    ))
-include(joinpath(@__DIR__, "plot/display.jl"))
+include(joinpath(@__DIR__, "hdf2pvd.jl"))
+include(joinpath(@__DIR__, "pts2vtp.jl"))
+include(joinpath(@__DIR__, "pts2surf.jl"))
+# include(joinpath(@__DIR__, "plot/display.jl"))
 
 quiet(f) = redirect_stdout(devnull) do
     redirect_stderr(devnull) do
@@ -39,6 +40,6 @@ quiet(f) = redirect_stdout(devnull) do
     end
 end
 
-include(joinpath(@__DIR__, "precompile.jl"))
+# include(joinpath(@__DIR__, "precompile.jl"))
 
 end
