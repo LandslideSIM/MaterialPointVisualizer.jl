@@ -12,10 +12,11 @@
 module MaterialPointVisualizer
 
 using ColorSchemes, Dates, DelimitedFiles, HDF5, Logging, PrecompileTools, Printf,
-    ProgressMeter, #=WGLMakie,=# WriteVTK
+      ProgressMeter, Reexport, WriteVTK
 
-import StatsBase: sample
 import FastPointQuery: trimesh, splashsurf, np, meshio
+
+@reexport using ColorSchemes, MeshCat, GeometryBasics
 
 @inline function format_seconds(s_time)
     s = s_time < 1 ? 1.0 : ceil(Int, s_time)
@@ -30,7 +31,7 @@ end
 include(joinpath(@__DIR__, "hdf2pvd.jl"))
 include(joinpath(@__DIR__, "pts2vtp.jl"))
 include(joinpath(@__DIR__, "pts2surf.jl"))
-# include(joinpath(@__DIR__, "plot/display.jl"))
+include(joinpath(@__DIR__, "plot/display.jl"))
 
 quiet(f) = redirect_stdout(devnull) do
     redirect_stderr(devnull) do

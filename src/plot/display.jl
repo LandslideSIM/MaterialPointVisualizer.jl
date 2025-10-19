@@ -1,140 +1,60 @@
-#==========================================================================================+
-|               MaterialPointVisualizer.jl: Post-processing for MPM in Julia               |
-+------------------------------------------------------------------------------------------+
-|  File Name  : local.jl                                                                   |
-|  Description: plot particle in a local GUI window                                        |
-|  Programmer : Zenan Huo                                                                  |
-|  Start Date : 01/01/2025                                                                 |
-|  Affiliation: Risk Group, UNIL-ISTE                                                      |
-+==========================================================================================#
-
-export vispts, visvol
-
-include(joinpath(@__DIR__, "plotutils.jl"))
-include(joinpath(@__DIR__, "voxel.jl"))
+export vispts
 
 """
-    vispts(coord::Matrix; colorby::String, attr::Vector, psize::Real, colormap::Symbol=:turbo, sample_n::Int=1000000)
+    vispts(raw_pts::Array{<:Real, 2}; markersize::Real=0.002, cval::Vector{<:Real}=Float32[], colormap::ColorScheme=ColorSchemes.jet)
 
-Description:
----
-Visualize the particles in a browser/VSCode using WGLMakie.
+Visualize 3D or 2D point cloud using MeshCat interactive viewer.
 
-- coord: The coordinates of the particles. It should be a 2D or 3D array of shape (n, m), 
-    where m is the number of particles and n is the dimension (2 or 3).
-- colorby: The attribute name to plot with the particles.
-- attr: The attributes of the particles. It should be a vector of length m.
-- psize: The size of the particles in the visualization.
-- colormap [optional]: The colormap to use for the visualization. Default is :turbo.
-- sample_n [optional]: The number of particles to sample for visualization. Default is 1,000,000.
-    If the number of particles exceeds this value, a random sample will be taken.
+# Arguments
+- `raw_pts::Array{<:Real, 2}`: Nx2 or Nx3 array where each row contains the coordinates [x, y] or [x, y, z] of a point.
+- `markersize::Real=0.002`: Size of the point markers in the visualization.
+- `cval::Vector{<:Real}=Float32[]`: Values for coloring each point. If empty, all points use the default color from colormap.
+- `colormap::ColorScheme=ColorSchemes.jet`: ColorScheme object from ColorSchemes.jl for mapping values to colors.
 
-Examples:
----
+# Returns
+- `vis::Visualizer`: A MeshCat Visualizer object that can be displayed interactively.
+
+# Examples
 ```julia
-vispts(rand(3, 10), colorby="attr's name", attr=rand(10), psize=3f0)
-vispts(rand(2, 10), colorby="random vals", attr=rand(10), psize=1f0, sample_n=5, colormap=:jet)
+# Visualize random 3D points
+pts = rand(10000, 3)
+vis = vispts(pts)
+
+# Visualize with color values
+vals = rand(10000)
+vis = vispts(pts, cval=vals, colormap=ColorSchemes.viridis, markersize=0.001)
+
+# Visualize 2D points (will be converted to 3D with z=0)
+pts_2d = rand(5000, 2)
+vis = vispts(pts_2d)
 ```
 """
-@views function vispts(
-    coord   ::Matrix;
-    colorby ::String,
-    attr    ::Vector,
-    psize   ::Real,
-    colormap::Symbol=:turbo,
-    sample_n::Int=1000000
+function vispts(raw_pts::Array{<:Real, 2};
+    markersize::Real=0.002, 
+    cval::Vector{<:Real}=Float32[],
+    colormap::ColorScheme=ColorSchemes.jet
 )
-    # Check input shape
-    n, m = size(coord)
-    n in (2, 3) || error("The provided coord must have 2 or 3 rows (2D or 3D)")
-    vid = m > sample_n ? sort(sample(1:m, sample_n; replace=false)) : 1:m
-    coord32 = Array{Float32, 2}(coord[:, vid])
-    n == 2 && (coord32 = vcat(coord32, zeros(Float32, 1, size(coord32, 2))))
-    attr32 = Array{Float32, 1}(attr[vid])
-    size(coord32, 2) == length(attr32) || error("Length of attr must match number of points in coord")
+    row, col = size(raw_pts); col ∈ [2, 3] || error("Input raw_pts must be of size Nx2 or Nx3.")
+    
+    # Convert to 3D points efficiently
+    if col == 2
+        verts = [Point{3, Float32}(Float32(raw_pts[i, 1]), Float32(raw_pts[i, 2]), 0f0) for i in 1:row]
+    else
+        verts = Point{3, Float32}.(eachrow(raw_pts))
+    end
+    
+    # Set up colors
+    if isempty(cval)
+        colors = [colormap[1.0] for _ in 1:row]  # Use default color
+    else
+        length(cval) == row || error("Length of cval must match number of points.")
+        c_min, c_max = extrema(cval)
+        colors = [get(colormap, (cval[i] - c_min) / (c_max - c_min)) for i in 1:row]
+    end
 
-    # create a new figure
-    Makie.set_theme!(WGLMakie=(resize_to=:body,), gettheme())
-    fig = Figure()
-    ax = LScene(fig[1, 1], show_axis=true)
-    canvas = ax.scene.plots[1]
-    canvas.ticks[:textcolor] = :white
-    #canvas.ticks[:fontsize ] = debug.plot.axfontsize
-    canvas.frame[:axiscolor] = "#818181"
-    canvas.names[:textcolor] = :white
-    #canvas.names[:fontsize ] = debug.plot.axfontsize
-    Label(fig[1, 1, Top()], "Particle Number: $(size(coord32, 2))")
-    plt = scatter!(ax, coord32, color=attr32, markersize=psize, colormap=colormap, 
-        transparency=false, depthsorting=false, marker=:rect)
-    Colorbar(fig[1, 2], plt, label=colorby, spinewidth=0)
-    display(fig)
-end
-
-"""
-    visvol(coord::Matrix; colorby::String, attr::Vector, vsize::Real, colormap::Symbol=:turbo, sample_n::Int=1000000, ncolors::Int=64)
-
-Description:
----
-Visualize the particles in a 3D voxel grid using WGLMakie.
-
-- coord: The coordinates of the particles. It should be a 2D or 3D array of shape (n, m), 
-    where m is the number of particles and n is the dimension (2 or 3).
-- colorby: The attribute name to plot with the particles.
-- attr: The attributes of the particles. It should be a vector of length m.
-- vsize: The size of the voxels in the visualization.
-- colormap [optional]: The colormap to use for the visualization. Default is :turbo.
-- sample_n [optional]: The number of particles to sample for visualization. Default is 1,000,000.
-    If the number of particles exceeds this value, a random sample will be taken.
-- ncolors [optional]: The number of colors in the colormap. Default is 64.
-
-Examples:
----
-```julia
-function torus_points(n)
-    R, r, θ, ϕ = 1.0, 0.3, 2π * rand(n), 2π * rand(n)
-    x = (R .+ r .* cos.(θ)) .* cos.(ϕ)
-    y = (R .+ r .* cos.(θ)) .* sin.(ϕ)
-    z = r .* sin.(θ)
-    return Array(hcat(x, y, z)')
-end
-points = torus_points(1_000_000)
-points[3, :] .+= 100
-values = points[3, :]  # z as the value to color by
-
-visvol(points, colorby="torus", attr=values, vsize=0.01)
-```
-"""
-@views function visvol(
-    coord   ::Matrix;
-    colorby ::String,
-    attr    ::Vector,
-    vsize   ::Real,
-    colormap::Symbol=:turbo,
-    sample_n::Int=1000000,
-    ncolors ::Int=64
-)
-    # Check input shape
-    n, m = size(coord)
-    n in (2, 3) || error("The provided coord must have 2 or 3 rows (2D or 3D)")
-    vid = m > sample_n ? sort(sample(1:m, sample_n; replace=false)) : 1:m
-    coord32 = Array{Float32, 2}(coord[:, vid])
-    n == 2 && (coord32 = vcat(coord32, zeros(Float32, 1, size(coord32, 2))))
-    attr32 = Array{Float32, 1}(attr[vid])
-    size(coord32, 2) == length(attr32) || error("Length of attr must match number of points in coord")
-    chunk, x, y, z, colors, vmin, vmax = _voxelize_with_colormap(coord32, attr32, vsize, colormap, ncolors)
-
-    # create a new figure
-    Makie.set_theme!(WGLMakie=(resize_to=:body,), gettheme())
-    fig = Figure()
-    ax = LScene(fig[1, 1], show_axis=true)
-    canvas = ax.scene.plots[1]
-    canvas.ticks[:textcolor] = :white
-    #canvas.ticks[:fontsize ] = debug.plot.axfontsize
-    canvas.frame[:axiscolor] = "#818181"
-    canvas.names[:textcolor] = :white
-    #canvas.names[:fontsize ] = debug.plot.axfontsize
-    Label(fig[1, 1, Top()], "Particle Number: $(size(coord32, 2))")
-    plt = voxels!(ax, x, y, z, chunk; color=colors, gap=0)
-    Colorbar(fig[1, 2], plt, label=colorby, spinewidth=0)
-    display(fig)
+    vis = Visualizer()
+    open(vis, start_browser=false)
+    material = PointsMaterial(vertexColors=2, size=Float32(markersize))
+    setobject!(vis, PointCloud(verts, colors), material)
+    return nothing
 end
