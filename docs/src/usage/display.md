@@ -3,32 +3,54 @@
 !!! info
 
     Sometimes we already have data in Julia and just want to see the results without exporting it to other software for visualization, which is too troublesome...😢
-    1) We assume that your device has at least one modern browser that supports WebGL 2.0
-    2) Or you are using the official Julia extension in VSCode
 
-This implementation is achieved through [WGLMakie.jl](https://github.com/MakieOrg/Makie.jl/tree/master/WGLMakie), where users only need to provide the coordinates of the particles, and all other aspects are optional.
+This implementation is achieved through [MeshCat.jl](https://github.com/rdeits/MeshCat.jl), which provides an interactive 3D visualization viewer accessible through a standard web browser.
 
 ```@docs
 vispts(
-    coord   ::Matrix;
-    colorby ::String,
-    attr    ::Vector,
-    psize   ::Real,
-    colormap::Symbol=:turbo,
-    sample_n::Int=1000000
-)
-
-visvol(
-    coord   ::Matrix;
-    colorby ::String,
-    attr    ::Vector,
-    vsize   ::Real,
-    colormap::Symbol=:turbo,
-    sample_n::Int=1000000,
-    ncolors ::Int=64
+    raw_pts ::Array{<:Real, 2};
+    markersize ::Real=0.002,
+    cval ::Vector{<:Real}=Float32[],
+    colormap ::ColorScheme=ColorSchemes.jet
 )
 ```
 
-!!! warning
+## Quick Start
 
-    If you are connecting to a remote headless server via SSH, you may encounter issues.
+### Visualize Point Cloud
+
+```julia
+using MaterialPointVisualizer
+
+# Create random points
+pts = rand(10000, 3)
+
+# Visualize with default settings
+vis = vispts(pts)
+```
+
+### Add Color by Values
+
+```julia
+# Create points and corresponding values
+pts = rand(10000, 3)
+vals = rand(10000)
+
+# Visualize with color mapping
+vis = vispts(pts, cval=vals, colormap=ColorSchemes.viridis, markersize=0.001)
+```
+
+### Visualize 2D Points
+
+```julia
+# 2D points are automatically converted to 3D (z=0)
+pts_2d = rand(5000, 2)
+vis = vispts(pts_2d, markersize=0.005)
+```
+
+## Browser Display
+
+The visualization opens in your default web browser. You can interact with the viewer using:
+- **Mouse drag**: Rotate the view
+- **Mouse scroll**: Zoom in/out
+- **Right-click drag**: Pan the view
