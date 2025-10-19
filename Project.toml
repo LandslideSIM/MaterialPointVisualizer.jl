@@ -1,6 +1,6 @@
 name = "MaterialPointVisualizer"
 uuid = "9ce2fbfb-c269-402f-8683-a675189e795c"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["ZenanH <zenan.huo@outlook.com>"]
 
 [deps]
