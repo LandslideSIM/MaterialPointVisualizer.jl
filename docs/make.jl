@@ -18,7 +18,6 @@ makedocs(
             "usage/pts2surf.md",
             "usage/display.md"
         ],
-        # "utils.md"
     ],
     warnonly = [:missing_docs, :cross_references],
 )
